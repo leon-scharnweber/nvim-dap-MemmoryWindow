@@ -6,6 +6,10 @@ local mem_buf = {
 	nr = -1,
 }
 
+local addr_prefix = "addr"
+
+local memory = {}
+
 local function b64_decode(data)
 	return vim.base64.decode(data)
 end
@@ -34,12 +38,35 @@ mem_buf.create = function()
 	return buf
 end
 
+local function make_Table_to_Array(table)
+	local array = {}
+	local count = 1
+
+	for _, value in pairs(table) do
+		array[count] = value
+		count = count + 1
+	end
+
+	return array
+end
+
+M.refresh = function()
+	local buf = mem_buf.nr
+
+	if not buf or not vim.api.nvim_buf_is_loaded(buf) then
+		return
+	end
+
+	local memoryArray = make_Table_to_Array(memory)
+
+	vim.api.nvim_buf_set_lines(buf, -2, -1, false, memoryArray)
+	vim.bo[buf].modifiable = false
+end
+
 function M.setup()
 	if M.config.dap_view_register and package.loaded["dap-view"] then
 		require("dap-view").register_view("memory", {
-			action = function()
-				vim.notify("Hello there")
-			end,
+			action = M.refresh,
 			buffer = mem_buf.create,
 			keymap = M.config.dapview.keymap,
 			label = M.config.dapview.label,
