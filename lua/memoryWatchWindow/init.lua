@@ -2,6 +2,10 @@ local M = {}
 
 local dap = require("dap")
 
+local mem_buf = {
+	nr = -1,
+}
+
 local function b64_decode(data)
 	return vim.base64.decode(data)
 end
@@ -15,15 +19,28 @@ local function is_available(session)
 	return true
 end
 
+mem_buf.create = function()
+	local buf = mem_buf.nr
+
+	if buf and vim.api.nvim_buf_is_valid(buf) then
+		return buf
+	end
+	buf = vim.api.nvim_create_buf(false, true)
+	vim.bo[buf].buftype = "nofile"
+	vim.bo[buf].modifiable = false
+	vim.api.nvim_buf_set_name(buf, "DAP Memory")
+	mem_buf.nr = buf
+
+	return buf
+end
+
 function M.setup()
 	if M.config.dap_view_register and package.loaded["dap-view"] then
 		require("dap-view").register_view("memory", {
 			action = function()
 				vim.notify("Hello there")
 			end,
-			buffer = function()
-				return vim.api.nvim_create_buf(false, true)
-			end,
+			buffer = mem_buf.create,
 			keymap = M.config.dapview.keymap,
 			label = M.config.dapview.label,
 			short_label = M.config.dapview.short_label,
