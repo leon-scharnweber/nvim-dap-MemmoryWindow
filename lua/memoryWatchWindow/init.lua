@@ -65,6 +65,8 @@ end
 
 function M.setup()
 	if M.config.dap_view_register and package.loaded["dap-view"] then
+		vim.notify("Werde registrieren")
+
 		require("dap-view").register_view("memory", {
 			action = M.refresh,
 			buffer = mem_buf.create,
@@ -72,6 +74,9 @@ function M.setup()
 			label = M.config.dapview.label,
 			short_label = M.config.dapview.short_label,
 		})
+		vim.notify("Habe registriert")
+	else
+		vim.notify("Package not loaded")
 	end
 end
 
