@@ -44,6 +44,10 @@ local function is_available(session)
 	return true
 end
 
+local function updateMemory()
+	M.readMemoryAddr(curr_addr, M.config.window.heigth * M.config.window.width)
+end
+
 mem_buf.create = function()
 	local buf = mem_buf.nr
 
