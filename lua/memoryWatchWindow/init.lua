@@ -84,11 +84,10 @@ M.config = {
 	},
 }
 
-local function printAddres(res, count)
-	local data = b64_decode(res.data)
+local function printAddres(bytes, count)
 	local hex_bytes = ""
 	for i = 1, count do
-		local byte = data:byte(i)
+		local byte = bytes:byte(i)
 		hex_bytes = hex_bytes .. string.format("%02x", byte)
 	end
 
@@ -108,7 +107,9 @@ function M.readMemoryAddr(mem_ref, count)
 		if err then
 			vim.notify("Beim Call gab es einen Fehler: " .. err.message)
 		else
-			printAddres(res, count)
+			local bytes = b64_decode(res.data)
+			printAddres(bytes, count)
+			memory[mem_ref] = bytes
 		end
 	end)
 end
