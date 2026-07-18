@@ -16,10 +16,29 @@ local function is_available(session)
 end
 
 function M.setup()
-	is_available()
+	if M.config.dap_view_register and package.loaded["dap-view"] then
+		require("dap-view").register_view("memory", {
+			action = function()
+				vim.notify("Hello there")
+			end,
+			buffer = function()
+				return vim.api.nvim_create_buf(false, true)
+			end,
+			keymap = M.config.dapview.keymap,
+			label = M.config.dapview.label,
+			short_label = M.config.dapview.short_label,
+		})
+	end
 end
 
-M.config = {}
+M.config = {
+	dap_view_register = true,
+	dapview = {
+		keymap = "M",
+		label = "Memory",
+		short_label = "M",
+	},
+}
 
 local function printAddres(res, count)
 	local data = b64_decode(res.data)
