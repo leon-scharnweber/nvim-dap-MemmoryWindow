@@ -6,6 +6,7 @@ local mem_buf = {
 	nr = -1,
 }
 
+local augroup = vim.api.nvim_create_augroup("DapMemory", { clear = true })
 
 local memory = {}
 
@@ -48,11 +49,23 @@ mem_buf.create = function()
 	vim.api.nvim_buf_set_name(buf, "DAP Memory")
 	mem_buf.nr = buf
 
+	vim.api.nvim_create_autocmd("BufDelete", {
+		group = augroup,
+		buf = buf,
+		callback = function(opts)
+			memory = {}
+			mem_buf.nr = -1
+			vim.api.nvim_del_augroup_by_id(augroup)
+		end,
+	})
+
 	return buf
 end
 
 local function make_Table_to_Array(table)
 	local array = {}
+local function make_memory_printable()
+	local printable_memory = {}
 	local count = 1
 
 	for _, value in pairs(table) do
