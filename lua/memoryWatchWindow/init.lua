@@ -116,6 +116,15 @@ local function printAddres(bytes, count)
 	vim.notify("Das lesen an der Stelle ist " .. hex_bytes)
 end
 
+local function putByteIntoMemoryTable(bytes, first_addr)
+	for i = 1, string.len(bytes) do
+		memory[first_addr] = string.byte(bytes, i)
+		first_addr = string.format("0x%016x", tonumber(first_addr) + 1)
+	end
+
+	vim.notify("Es wurde neue bytes geladen und gespeichert")
+end
+
 function M.readMemoryAddr(mem_ref, count)
 	local session = dap.session()
 	if not is_available(session) then
@@ -134,7 +143,7 @@ function M.readMemoryAddr(mem_ref, count)
 		else
 			local bytes = b64_decode(res.data)
 			printAddres(bytes, count)
-			memory[mem_ref] = bytes
+			putByteIntoMemoryTable(bytes, mem_ref)
 		end
 	end)
 end
