@@ -6,7 +6,6 @@ local mem_buf = {
 	nr = -1,
 }
 
-local addr_prefix = "addr"
 
 local memory = {}
 
