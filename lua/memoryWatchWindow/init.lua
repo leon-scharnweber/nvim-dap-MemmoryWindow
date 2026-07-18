@@ -14,6 +14,20 @@ local function b64_decode(data)
 	return vim.base64.decode(data)
 end
 
+M.config = {
+	dap_view_register = true,
+	dapview = {
+		keymap = "M",
+		label = "Memory",
+		short_label = "M",
+	},
+	window = {
+		heigth = 20,
+		width = 16,
+		unknown_sign = "??",
+	},
+	start_addr = "0x00007fffffffd380",
+}
 local function is_available(session)
 	if not session then
 		print("Derzeitg keine Session")
@@ -79,15 +93,6 @@ function M.setup()
 		vim.notify("Package not loaded")
 	end
 end
-
-M.config = {
-	dap_view_register = true,
-	dapview = {
-		keymap = "M",
-		label = "Memory",
-		short_label = "M",
-	},
-}
 
 local function printAddres(bytes, count)
 	local hex_bytes = ""
