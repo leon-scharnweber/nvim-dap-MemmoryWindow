@@ -6,6 +6,8 @@ local mem_buf = {
 	nr = -1,
 }
 
+local curr_addr = "0x0"
+
 local augroup = vim.api.nvim_create_augroup("DapMemory", { clear = true })
 
 local memory = {}
@@ -28,6 +30,11 @@ M.config = {
 	},
 	start_addr = "0x00007fffffffd380",
 }
+
+local wished_new_addr = { M.config.start_addr }
+
+local new_memory = false
+
 local function is_available(session)
 	if not session then
 		print("Derzeitg keine Session")
@@ -62,18 +69,30 @@ mem_buf.create = function()
 	return buf
 end
 
-local function make_Table_to_Array(table)
-	local array = {}
 local function make_memory_printable()
 	local printable_memory = {}
 	local count = 1
+	local curr_addr_count = curr_addr
 
-	for _, value in pairs(table) do
-		array[count] = value
-		count = count + 1
+	vim.notify("Curr addr: " .. curr_addr_count)
+
+	for i = 1, M.config.window.heigth do
+		local lines = ""
+		local byte = ""
+		for j = 1, M.config.window.width do
+			local raw_byte = memory[curr_addr_count]
+			if raw_byte then
+				byte = string.format("%02x", raw_byte)
+				lines = lines .. byte .. " "
+			else
+				lines = lines .. M.config.window.unknown_sign .. " "
+			end
+			curr_addr_count = string.format("0x%016x", tonumber(curr_addr_count) + 1)
+		end
+		printable_memory[i] = lines
 	end
 
-	return array
+	return printable_memory
 end
 
 M.refresh = function()
@@ -83,10 +102,24 @@ M.refresh = function()
 		return
 	end
 
-	local memoryArray = make_Table_to_Array(memory)
+	if #wished_new_addr > 0 then
+		curr_addr = wished_new_addr[#wished_new_addr]
+		vim.notify("Es gibt eine addr Änderung: " .. curr_addr)
+		updateMemory()
+		wished_new_addr = {}
+		return
+	elseif new_memory then
+		local printable_memory = make_memory_printable()
+		vim.bo[buf].modifiable = true
+		vim.api.nvim_buf_set_lines(buf, 0, M.config.window.heigth, false, printable_memory)
+		vim.bo[buf].modifiable = false
+		new_memory = false
+	end
+end
 
-	vim.api.nvim_buf_set_lines(buf, -2, -1, false, memoryArray)
-	vim.bo[buf].modifiable = false
+M.changeCurrAddr = function(new_addr)
+	wished_new_addr[#wished_new_addr + 1] = new_addr
+	M.refresh()
 end
 
 function M.setup()
@@ -144,6 +177,8 @@ function M.readMemoryAddr(mem_ref, count)
 			local bytes = b64_decode(res.data)
 			printAddres(bytes, count)
 			putByteIntoMemoryTable(bytes, mem_ref)
+			new_memory = true
+			M.refresh()
 		end
 	end)
 end
