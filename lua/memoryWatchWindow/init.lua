@@ -105,6 +105,9 @@ function M.readMemoryAddr(mem_ref, count)
 		return
 	end
 
+	vim.notify("mem_ref: " .. mem_ref)
+	vim.notify("count: " .. count)
+
 	session:request("readMemory", {
 		memoryReference = mem_ref,
 		count = count,
