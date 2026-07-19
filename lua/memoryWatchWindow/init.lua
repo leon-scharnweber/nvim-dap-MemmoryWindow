@@ -96,7 +96,7 @@ local function make_memory_printable()
 	vim.notify("Curr addr: " .. curr_addr_count)
 
 	for i = 1, M.config.window.heigth do
-		local lines = ""
+		local lines = " "
 		local byte = ""
 		for j = 1, M.config.window.width do
 			local raw_byte = memory[curr_addr_count]
