@@ -83,6 +83,7 @@ mem_buf.create = function()
 		callback = function(opts)
 			memory = {}
 			mem_buf.nr = -1
+			vim.wo.statuscolumn = save_statuscolumn
 			vim.api.nvim_del_augroup_by_id(augroup)
 		end,
 	})
