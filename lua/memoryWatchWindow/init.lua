@@ -12,6 +12,8 @@ local augroup = vim.api.nvim_create_augroup("DapMemory", { clear = true })
 
 local memory = {}
 
+local save_statuscolumn = ""
+
 local function b64_decode(data)
 	return vim.base64.decode(data)
 end
