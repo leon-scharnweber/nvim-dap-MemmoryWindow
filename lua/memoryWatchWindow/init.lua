@@ -60,6 +60,23 @@ mem_buf.create = function()
 	vim.api.nvim_buf_set_name(buf, "DAP Memory")
 	mem_buf.nr = buf
 
+	vim.api.nvim_create_autocmd("BufEnter", {
+		buf = buf,
+		group = augroup,
+		callback = function(opts)
+			save_statuscolumn = vim.wo.statuscolumn
+			vim.wo.statuscolumn = "%{%v:lua.ChangeNumColoum()%}"
+		end,
+	})
+
+	vim.api.nvim_create_autocmd("BufLeave", {
+		buf = buf,
+		group = augroup,
+		callback = function(opts)
+			vim.wo.statuscolumn = save_statuscolumn
+		end,
+	})
+
 	vim.api.nvim_create_autocmd("BufDelete", {
 		group = augroup,
 		buf = buf,
@@ -71,6 +88,11 @@ mem_buf.create = function()
 	})
 
 	return buf
+end
+
+function ChangeNumColoum()
+	local linenum = vim.v.lnum
+	return string.format("0x%016x", tonumber(curr_addr) + (linenum - 1) * M.config.window.width)
 end
 
 local function make_memory_printable()
