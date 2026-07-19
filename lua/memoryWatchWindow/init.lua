@@ -69,14 +69,6 @@ mem_buf.create = function()
 		end,
 	})
 
-	vim.api.nvim_create_autocmd("BufLeave", {
-		buf = buf,
-		group = augroup,
-		callback = function(opts)
-			vim.wo.statuscolumn = save_statuscolumn
-		end,
-	})
-
 	vim.api.nvim_create_autocmd("BufDelete", {
 		group = augroup,
 		buf = buf,
