@@ -199,12 +199,14 @@ function M.readMemoryAddr(mem_ref, count)
 		else
 			if type(res.unreadableBytes) ~= nil then
 				vim.notify("Unreadable bytes: " .. res.unreadableBytes)
+			else
+				res.unreadableBytes = 0
 			end
 			if type(res.data) ~= "string" then
 				memory = {}
 			else
 				local bytes = b64_decode(res.data)
-				printAddres(bytes, count)
+				printAddres(bytes, count - res.unreadableBytes)
 				putByteIntoMemoryTable(bytes, mem_ref)
 			end
 			new_memory = true
