@@ -83,8 +83,16 @@ mem_buf.create = function()
 		group = augroup,
 		callback = function(opts)
 			local line = vim.fn.line(".")
-			if line <= 2 then
-				vim.notify("Cursor moved on line: " .. line)
+			if line <= scroll_up_line then
+				vim.notify("Scroll up")
+				local pos = vim.fn.getcurpos()
+				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
+				vim.api.nvim_win_set_cursor(0, { scroll_up_line + 1, curswant })
+			elseif line >= scroll_down_line then
+				vim.notify("Scroll down")
+				local pos = vim.fn.getcurpos()
+				local curswant = pos[6] - 1 -- curswant ist 1 indiziert und set cursor 0
+				vim.api.nvim_win_set_cursor(0, { scroll_down_line - 1, curswant })
 			end
 		end,
 	})
