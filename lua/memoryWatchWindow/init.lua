@@ -74,6 +74,17 @@ mem_buf.create = function()
 		end,
 	})
 
+	vim.api.nvim_create_autocmd("CursorMoved", {
+		buffer = buf,
+		group = augroup,
+		callback = function(opts)
+			local line = vim.fn.line(".")
+			if line <= 2 then
+				vim.notify("Cursor moved on line: " .. line)
+			end
+		end,
+	})
+
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = buf,
 		group = augroup,
