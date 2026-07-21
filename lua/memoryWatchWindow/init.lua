@@ -71,13 +71,20 @@ mem_buf.create = function()
 		end,
 	})
 
+	vim.api.nvim_create_autocm("BufLeave", {
+		buffer = buf,
+		group = augroup,
+		callback = function(opts)
+			vim.wo.statuscolumn = save_statuscolumn
+		end,
+	})
 
 	return buf
 end
 
-m.close = function()
+M.close = function()
 	if vim.api.nvim_buf_is_valid(mem_buf.nr) then
-		vim.notify("close function:" .. mem_buf.nr)
+		vim.notify("Close Function:" .. mem_buf.nr)
 		vim.api.nvim_buf_delete(mem_buf.nr, {})
 	end
 
