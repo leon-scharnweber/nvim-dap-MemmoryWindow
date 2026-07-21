@@ -36,6 +36,10 @@ M.config = {
 	start_addr = "0x00007fffffffd380",
 }
 
+local scroll_up_line = 1
+
+local scroll_down_line = M.config.window.heigth + 2 -- erste ist scroll up deswegen + 2
+
 local wished_new_addr = { M.config.start_addr }
 
 local new_memory = false
@@ -103,11 +107,17 @@ end
 
 function ChangeNumColoum()
 	local linenum = vim.v.lnum
-	return string.format("0x%016x", tonumber(curr_addr) + (linenum - 1) * M.config.window.width)
+	if linenum == scroll_up_line then
+		return "Scroll Up"
+	elseif linenum == M.config.window.heigth + 2 then
+		return "Scroll down"
+	else
+		return string.format("0x%016x", tonumber(curr_addr) + (linenum - 2) * M.config.window.width)
+	end
 end
 
 local function make_memory_printable()
-	local printable_memory = {}
+	local printable_memory = { "" }
 	local count = 1
 	local curr_addr_count = curr_addr
 
@@ -126,8 +136,10 @@ local function make_memory_printable()
 			end
 			curr_addr_count = string.format("0x%016x", tonumber(curr_addr_count) + 1)
 		end
-		printable_memory[i] = lines
+		printable_memory[i + 1] = lines -- +1 weil erste Zeile die scroll Up line ist
 	end
+
+	printable_memory[scroll_down_line] = ""
 
 	return printable_memory
 end
