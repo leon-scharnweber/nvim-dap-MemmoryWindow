@@ -71,7 +71,7 @@ mem_buf.create = function()
 		end,
 	})
 
-	vim.api.nvim_create_autocm("BufLeave", {
+	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = buf,
 		group = augroup,
 		callback = function(opts)
@@ -83,14 +83,8 @@ mem_buf.create = function()
 end
 
 M.close = function()
-	if vim.api.nvim_buf_is_valid(mem_buf.nr) then
-		vim.notify("Close Function:" .. mem_buf.nr)
-		vim.api.nvim_buf_delete(mem_buf.nr, {})
-	end
-
 	memory = {}
-	mem_buf.nr = -1
-	curr_adr = M.config.start_addr
+	wished_new_addr[#wished_new_addr + 1] = M.config.start_addr
 end
 
 function ChangeNumColoum()
