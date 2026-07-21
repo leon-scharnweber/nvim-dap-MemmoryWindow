@@ -8,6 +8,9 @@ local mem_buf = {
 
 local curr_addr = "0x0"
 
+local hex_regex =
+	"^0x[0-9a-f][0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?$"
+
 local augroup = vim.api.nvim_create_augroup("DapMemory", { clear = true })
 
 local memory = {}
@@ -141,8 +144,30 @@ M.refresh = function()
 end
 
 M.changeCurrAddr = function(new_addr)
-	wished_new_addr[#wished_new_addr + 1] = new_addr
-	M.refresh()
+	if string.match(new_addr, hex_regex, 1) then
+		wished_new_addr[#wished_new_addr + 1] = new_addr
+		M.refresh()
+	else
+		local session = dap.session()
+
+		if not is_available(session) then
+			return
+		end
+
+		session:request("evaluate", {
+			expression = "?/nat (void*)&" .. new_addr,
+			frameId = session.current_frame and session.current_frame.id,
+			context = "repl",
+		}, function(err, res)
+			if err then
+				vim.notify("Fehler beim bekomen der Addresse der Variablen " .. err.message)
+			else
+				vim.notify("Adresse bekommen von variable: " .. res.result)
+				wished_new_addr[#wished_new_addr + 1] = res.result
+				M.refresh()
+			end
+		end)
+	end
 end
 
 function M.setup()
