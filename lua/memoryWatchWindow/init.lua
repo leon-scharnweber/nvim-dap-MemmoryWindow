@@ -197,9 +197,16 @@ function M.readMemoryAddr(mem_ref, count)
 		if err then
 			vim.notify("Beim Call gab es einen Fehler: " .. err.message)
 		else
-			local bytes = b64_decode(res.data)
-			printAddres(bytes, count)
-			putByteIntoMemoryTable(bytes, mem_ref)
+			if type(res.unreadableBytes) ~= nil then
+				vim.notify("Unreadable bytes: " .. res.unreadableBytes)
+			end
+			if type(res.data) ~= "string" then
+				memory = {}
+			else
+				local bytes = b64_decode(res.data)
+				printAddres(bytes, count)
+				putByteIntoMemoryTable(bytes, mem_ref)
+			end
 			new_memory = true
 			M.refresh()
 		end
