@@ -63,7 +63,7 @@ mem_buf.create = function()
 	mem_buf.nr = buf
 
 	vim.api.nvim_create_autocmd("BufEnter", {
-		buf = buf,
+		buffer = buf,
 		group = augroup,
 		callback = function(opts)
 			save_statuscolumn = vim.wo.statuscolumn
