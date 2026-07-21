@@ -91,7 +91,7 @@ mem_buf.create = function()
 			elseif line >= scroll_down_line then
 				vim.notify("Scroll down")
 				local pos = vim.fn.getcurpos()
-				local curswant = pos[6] - 1 -- curswant ist 1 indiziert und set cursor 0
+				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_down_line - 1, curswant })
 			end
 		end,
