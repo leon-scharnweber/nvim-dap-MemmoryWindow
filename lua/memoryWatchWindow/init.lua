@@ -71,18 +71,19 @@ mem_buf.create = function()
 		end,
 	})
 
-	vim.api.nvim_create_autocmd("BufDelete", {
-		group = augroup,
-		buf = buf,
-		callback = function(opts)
-			memory = {}
-			mem_buf.nr = -1
-			vim.wo.statuscolumn = save_statuscolumn
-			vim.api.nvim_del_augroup_by_id(augroup)
-		end,
-	})
 
 	return buf
+end
+
+m.close = function()
+	if vim.api.nvim_buf_is_valid(mem_buf.nr) then
+		vim.notify("close function:" .. mem_buf.nr)
+		vim.api.nvim_buf_delete(mem_buf.nr, {})
+	end
+
+	memory = {}
+	mem_buf.nr = -1
+	curr_adr = M.config.start_addr
 end
 
 function ChangeNumColoum()
