@@ -8,6 +8,8 @@ local mem_buf = {
 
 local curr_addr = "0x0"
 
+local log = require("memoryWatchWindow.logging")
+
 local hex_regex =
 	"^0x[0-9a-f][0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?$"
 
@@ -48,10 +50,9 @@ local new_memory = false
 
 local function is_available(session)
 	if not session then
-		print("Derzeitg keine Session")
+		vim.notify("Error: No Sesssion available")
 		return false
 	end
-	print("Es ist eine Sesssion vorhanden")
 	return true
 end
 
@@ -86,13 +87,13 @@ mem_buf.create = function()
 		callback = function(opts)
 			local line = vim.fn.line(".")
 			if line <= scroll_up_line then
-				vim.notify("Scroll up")
+				log.debug("Scroll up")
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_up_line + 1, curswant })
 				M.changeCurrAddr(string.format("0x%016x", tonumber(curr_addr) - M.config.window.width))
 			elseif line >= scroll_down_line then
-				vim.notify("Scroll down")
+				log.debug("Scroll down")
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_down_line - 1, curswant })
@@ -165,7 +166,7 @@ M.refresh = function()
 
 	if #wished_new_addr > 0 then
 		curr_addr = wished_new_addr[#wished_new_addr]
-		vim.notify("Es gibt eine addr Änderung: " .. curr_addr)
+		log.debug("Es gibt eine addr Änderung: " .. curr_addr)
 		updateMemory()
 		wished_new_addr = {}
 		return
@@ -197,7 +198,7 @@ M.changeCurrAddr = function(new_addr)
 			if err then
 				vim.notify("Fehler beim bekomen der Addresse der Variablen " .. err.message)
 			else
-				vim.notify("Adresse bekommen von variable: " .. res.result)
+				log.debug("Adresse bekommen von variable: " .. res.result)
 				wished_new_addr[#wished_new_addr + 1] = res.result
 				M.refresh()
 			end
@@ -207,8 +208,6 @@ end
 
 function M.setup()
 	if M.config.dap_view_register and package.loaded["dap-view"] then
-		vim.notify("Werde registrieren")
-
 		require("dap-view").register_view("memory", {
 			action = M.refresh,
 			buffer = mem_buf.create,
@@ -216,9 +215,6 @@ function M.setup()
 			label = M.config.dapview.label,
 			short_label = M.config.dapview.short_label,
 		})
-		vim.notify("Habe registriert")
-	else
-		vim.notify("Package not loaded")
 	end
 end
 
@@ -229,7 +225,7 @@ local function printAddres(bytes, count)
 		hex_bytes = hex_bytes .. string.format("%02x", byte)
 	end
 
-	vim.notify("Das lesen an der Stelle ist " .. hex_bytes)
+	log.debug("Das lesen an der Stelle ist " .. hex_bytes)
 end
 
 local function putByteIntoMemoryTable(bytes, first_addr)
@@ -237,8 +233,6 @@ local function putByteIntoMemoryTable(bytes, first_addr)
 		memory[first_addr] = string.byte(bytes, i)
 		first_addr = string.format("0x%016x", tonumber(first_addr) + 1)
 	end
-
-	vim.notify("Es wurde neue bytes geladen und gespeichert")
 end
 
 function M.readMemoryAddr(mem_ref, count)
@@ -247,8 +241,8 @@ function M.readMemoryAddr(mem_ref, count)
 		return
 	end
 
-	vim.notify("mem_ref: " .. mem_ref)
-	vim.notify("count: " .. count)
+	log.debug("mem_ref: " .. mem_ref)
+	log.debug("count: " .. count)
 
 	session:request("readMemory", {
 		memoryReference = mem_ref,
@@ -297,7 +291,7 @@ function M.readMemoryVar(var)
 		context = "repl",
 	}, function(err, res)
 		if err then
-			vim.notify("Fehler beim bekomen der Größe der Variablen " .. err.message)
+			vim.notify("Error: Couldnt get the size of the variable: " .. var .. ": " .. err.message)
 		else
 			varValues.size = tonumber(res.result)
 			ready()
@@ -310,7 +304,7 @@ function M.readMemoryVar(var)
 		context = "repl",
 	}, function(err, res)
 		if err then
-			vim.notify("Fehler beim bekomen der Addresse der Variablen " .. err.message)
+			vim.notify("Error: Couldnt get the address of the variable: " .. var .. ": " .. err.message)
 		else
 			varValues.addr = res.result
 			ready()
