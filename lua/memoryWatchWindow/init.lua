@@ -36,9 +36,11 @@ M.config = {
 	start_addr = "0x00007fffffffd380",
 }
 
+local additional_row_count = 2
+
 local scroll_up_line = 1
 
-local scroll_down_line = M.config.window.heigth + 2 -- erste ist scroll up deswegen + 2
+local scroll_down_line = M.config.window.heigth + additional_row_count -- erste ist scroll up deswegen + 2
 
 local wished_new_addr = { M.config.start_addr }
 
@@ -88,11 +90,13 @@ mem_buf.create = function()
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_up_line + 1, curswant })
+				M.changeCurrAddr(string.format("0x%016x", tonumber(curr_addr) - M.config.window.width))
 			elseif line >= scroll_down_line then
 				vim.notify("Scroll down")
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_down_line - 1, curswant })
+				M.changeCurrAddr(string.format("0x%016x", tonumber(curr_addr) + M.config.window.width))
 			end
 		end,
 	})
@@ -168,7 +172,7 @@ M.refresh = function()
 	elseif new_memory then
 		local printable_memory = make_memory_printable()
 		vim.bo[buf].modifiable = true
-		vim.api.nvim_buf_set_lines(buf, 0, M.config.window.heigth, false, printable_memory)
+		vim.api.nvim_buf_set_lines(buf, 0, M.config.window.heigth + additional_row_count, false, printable_memory)
 		vim.bo[buf].modifiable = false
 		new_memory = false
 	end
