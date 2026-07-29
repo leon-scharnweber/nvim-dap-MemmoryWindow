@@ -24,3 +24,7 @@ end
 require("dap").listeners.before.event_exited["dap-memory"] = function(_, _)
 	require("memoryWatchWindow").close()
 end
+
+require("dap").listeners.after.event_stopped["dap-memory"] = function(_, _)
+	require("memoryWatchWindow").update()
+end

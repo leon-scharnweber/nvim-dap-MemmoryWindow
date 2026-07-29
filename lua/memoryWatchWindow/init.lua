@@ -118,6 +118,10 @@ M.close = function()
 	wished_new_addr[#wished_new_addr + 1] = M.config.start_addr
 end
 
+M.update = function()
+	updateMemory()
+end
+
 function ChangeNumColoum()
 	local linenum = vim.v.lnum
 	if linenum == scroll_up_line then
