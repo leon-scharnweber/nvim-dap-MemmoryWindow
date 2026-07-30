@@ -163,6 +163,7 @@ end
 M.close = function()
 	memory = {}
 	wished_new_addr[#wished_new_addr + 1] = M.config.start_addr
+	saved_cursor_pos = { scroll_up_line + 1, 1 }
 end
 
 M.update = function()
