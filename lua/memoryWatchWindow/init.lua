@@ -1,6 +1,7 @@
 local M = {}
 
 local dap = require("dap")
+local hex_utils = require("memoryWatchWindow.hex_utils")
 
 local mem_buf = {
 	nr = -1,
@@ -9,9 +10,6 @@ local mem_buf = {
 local curr_addr = "0x0"
 
 local log = require("memoryWatchWindow.logging")
-
-local hex_regex =
-	"^0x[0-9a-f][0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?$"
 
 local augroup = vim.api.nvim_create_augroup("DapMemory", { clear = true })
 
@@ -91,13 +89,13 @@ mem_buf.create = function()
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_up_line + 1, curswant })
-				M.changeCurrAddr(string.format("0x%016x", tonumber(curr_addr) - M.config.window.width))
+				M.changeCurrAddr(hex_utils.hexAddition(curr_addr, M.config.window.width))
 			elseif line >= scroll_down_line then
 				log.debug("Scroll down")
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_down_line - 1, curswant })
-				M.changeCurrAddr(string.format("0x%016x", tonumber(curr_addr) + M.config.window.width))
+				M.changeCurrAddr(hex_utils.hexAddition(curr_addr, M.config.window.width))
 			end
 		end,
 	})
@@ -129,13 +127,12 @@ function ChangeNumColoum()
 	elseif linenum == M.config.window.heigth + 2 then
 		return "Scroll down"
 	else
-		return string.format("0x%016x", tonumber(curr_addr) + (linenum - 2) * M.config.window.width)
+		return hex_utils.hexAddition(curr_addr, (linenum - 2) * M.config.window.width)
 	end
 end
 
 local function make_memory_printable()
 	local printable_memory = { "" }
-	local count = 1
 	local curr_addr_count = curr_addr
 
 	vim.notify("Curr addr: " .. curr_addr_count)
@@ -146,12 +143,12 @@ local function make_memory_printable()
 		for j = 1, M.config.window.width do
 			local raw_byte = memory[curr_addr_count]
 			if raw_byte then
-				byte = string.format("%02x", raw_byte)
+				byte = hex_utils.byte_to_hex(raw_byte)
 				lines = lines .. byte .. " "
 			else
 				lines = lines .. M.config.window.unknown_sign .. " "
 			end
-			curr_addr_count = string.format("0x%016x", tonumber(curr_addr_count) + 1)
+			curr_addr_count = hex_utils.hexAddition(curr_addr_count, 1)
 		end
 		printable_memory[i + 1] = lines -- +1 weil erste Zeile die scroll Up line ist
 	end
@@ -184,7 +181,7 @@ M.refresh = function()
 end
 
 M.changeCurrAddr = function(new_addr)
-	if string.match(new_addr, hex_regex, 1) then
+	if string.match(new_addr, hex_utils.hex_regex, 1) then
 		wished_new_addr[#wished_new_addr + 1] = new_addr
 		M.refresh()
 	else
@@ -226,7 +223,7 @@ local function printAddres(bytes, count)
 	local hex_bytes = ""
 	for i = 1, count do
 		local byte = bytes:byte(i)
-		hex_bytes = hex_bytes .. string.format("%02x", byte)
+		hex_bytes = hex_bytes .. hex_utils.byte_to_hex(byte)
 	end
 
 	log.debug("Das lesen an der Stelle ist " .. hex_bytes)
@@ -235,7 +232,9 @@ end
 local function putByteIntoMemoryTable(bytes, first_addr)
 	for i = 1, string.len(bytes) do
 		memory[first_addr] = string.byte(bytes, i)
-		first_addr = string.format("0x%016x", tonumber(first_addr) + 1)
+		first_addr = hex_utils.hexAddition(first_addr, 1)
+	end
+end
 	end
 end
 
