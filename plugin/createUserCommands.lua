@@ -10,6 +10,10 @@ vim.api.nvim_create_user_command("ReadMemoryVar", function(opts)
 	require("memoryWatchWindow").readMemoryVar(opts.fargs[1])
 end, { nargs = 1 })
 
+vim.api.nvim_create_user_command("WriteMemory", function(opts)
+	require("memoryWatchWindow").writeMemory(opts.fargs[1], opts.fargs[2])
+end, { nargs = "+" })
+
 vim.api.nvim_create_user_command("ReadMemory", function(opts)
 	require("memoryWatchWindow").readMemory(opts.fargs[1])
 end, { nargs = 1 })

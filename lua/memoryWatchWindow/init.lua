@@ -21,6 +21,10 @@ local function b64_decode(data)
 	return vim.base64.decode(data)
 end
 
+local function b64_encode(data)
+	return vim.base64.encode(data)
+end
+
 M.config = {
 	dap_view_register = true,
 	dapview = {
@@ -235,7 +239,26 @@ local function putByteIntoMemoryTable(bytes, first_addr)
 		first_addr = hex_utils.hexAddition(first_addr, 1)
 	end
 end
+
+M.writeMemory = function(mem_ref, bytes)
+	local session = dap.session()
+	if not is_available(session) then
+		return
 	end
+
+	local bytes_encodeb64 = b64_encode(bytes)
+
+	session:request("writeMemory", {
+		memoryReference = mem_ref,
+		allowPartial = true,
+		data = bytes_encodeb64,
+	}, function(err, res)
+		if err then
+			vim.notify("Memory writting responses with an Error: " .. err.message)
+		else
+			updateMemory()
+		end
+	end)
 end
 
 function M.readMemoryAddr(mem_ref, count)
