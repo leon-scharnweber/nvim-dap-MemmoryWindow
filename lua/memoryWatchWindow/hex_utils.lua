@@ -6,6 +6,10 @@ for idx = 0, 255 do
 	M.hex_to_char[("%02x"):format(idx)] = string.char(idx)
 end
 
+M.hex_string_to_raw_bytes_string = function(str)
+	return str:gsub("(..)", hex_to_char)
+end
+
 M.hex_regex =
 	"^0x[0-9a-f][0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?[0-9a-f]?$"
 

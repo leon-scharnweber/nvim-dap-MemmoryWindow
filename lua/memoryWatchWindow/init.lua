@@ -241,13 +241,15 @@ local function putByteIntoMemoryTable(bytes, first_addr)
 	end
 end
 
-M.writeMemory = function(mem_ref, bytes)
+M.writeMemory = function(mem_ref, bytes_ascii)
 	local session = dap.session()
 	if not is_available(session) then
 		return
 	end
 
-	local bytes_encodeb64 = b64_encode(bytes)
+	local raw_bytes = hex_utils.hex_string_to_raw_bytes_string(bytes_ascii)
+
+	local bytes_encodeb64 = b64_encode(raw_bytes)
 
 	session:request("writeMemory", {
 		memoryReference = mem_ref,
