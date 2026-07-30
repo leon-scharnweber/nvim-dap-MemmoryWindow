@@ -47,6 +47,8 @@ local scroll_up_line = 1
 
 local scroll_down_line = M.config.window.heigth + additional_row_count -- erste ist scroll up deswegen + 2
 
+local saved_cursor_pos = { scroll_up_line + 1, 1 }
+
 local wished_new_addr = { M.config.start_addr }
 
 local new_memory = false
@@ -97,6 +99,10 @@ local function fill_buffer_with_dummy_data(buf)
 	vim.bo[buf].modifiable = false
 end
 
+local function save_cursor_pos()
+	saved_cursor_pos = vim.api.nvim_win_get_cursor(0)
+end
+
 mem_buf.create = function()
 	local buf = mem_buf.nr
 
@@ -117,7 +123,7 @@ mem_buf.create = function()
 		callback = function(opts)
 			save_statuscolumn = vim.wo.statuscolumn
 			vim.wo.statuscolumn = "%{%v:lua.ChangeNumColoum()%}"
-			vim.api.nvim_win_set_cursor(0, { save_cursor_pos_heigth, save_cursor_pos_width })
+			vim.api.nvim_win_set_cursor(0, saved_cursor_pos)
 		end,
 	})
 
@@ -147,6 +153,7 @@ mem_buf.create = function()
 		group = augroup,
 		callback = function(opts)
 			vim.wo.statuscolumn = save_statuscolumn
+			save_cursor_pos()
 		end,
 	})
 
@@ -171,33 +178,6 @@ function ChangeNumColoum()
 	else
 		return hex_utils.hexAddition(curr_addr, (linenum - 2) * M.config.window.width)
 	end
-end
-
-local function make_memory_printable()
-	local printable_memory = { "" }
-	local curr_addr_count = curr_addr
-
-	log.info("Curr addr: " .. curr_addr_count)
-
-	for i = 1, M.config.window.heigth do
-		local lines = " "
-		local byte = ""
-		for j = 1, M.config.window.width do
-			local raw_byte = memory[curr_addr_count]
-			if raw_byte then
-				byte = hex_utils.byte_to_hex(raw_byte)
-				lines = lines .. byte .. " "
-			else
-				lines = lines .. M.config.window.unknown_sign .. " "
-			end
-			curr_addr_count = hex_utils.hexAddition(curr_addr_count, 1)
-		end
-		printable_memory[i + 1] = lines -- +1 weil erste Zeile die scroll Up line ist
-	end
-
-	printable_memory[scroll_down_line] = ""
-
-	return printable_memory
 end
 
 M.refresh = function()
