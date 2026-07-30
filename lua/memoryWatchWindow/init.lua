@@ -94,7 +94,7 @@ mem_buf.create = function()
 				local pos = vim.fn.getcurpos()
 				local curswant = pos[5] - 1 -- curswant ist 1 indiziert und set cursor 0
 				vim.api.nvim_win_set_cursor(0, { scroll_up_line + 1, curswant })
-				M.changeCurrAddr(hex_utils.hexAddition(curr_addr, M.config.window.width))
+				M.changeCurrAddr(hex_utils.hexAddition(curr_addr, -M.config.window.width))
 			elseif line >= scroll_down_line then
 				log.debug("Scroll down")
 				local pos = vim.fn.getcurpos()
