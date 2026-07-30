@@ -7,7 +7,7 @@ for idx = 0, 255 do
 end
 
 M.hex_string_to_raw_bytes_string = function(str)
-	return str:gsub("(..)", hex_to_char)
+	return str:gsub("(..)", M.hex_to_char)
 end
 
 M.hex_regex =
