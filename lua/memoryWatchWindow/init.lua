@@ -63,6 +63,40 @@ local function updateMemory()
 	M.readMemoryAddr(curr_addr, M.config.window.heigth * M.config.window.width)
 end
 
+local function make_memory_printable()
+	local printable_memory = { "" }
+	local curr_addr_count = curr_addr
+
+	log.info("Curr addr: " .. curr_addr_count)
+
+	for i = 1, M.config.window.heigth do
+		local lines = " "
+		local byte = ""
+		for j = 1, M.config.window.width do
+			local raw_byte = memory[curr_addr_count]
+			if raw_byte then
+				byte = hex_utils.byte_to_hex(raw_byte)
+				lines = lines .. byte .. " "
+			else
+				lines = lines .. M.config.window.unknown_sign .. " "
+			end
+			curr_addr_count = hex_utils.hexAddition(curr_addr_count, 1)
+		end
+		printable_memory[i + 1] = lines -- +1 weil erste Zeile die scroll Up line ist
+	end
+
+	printable_memory[scroll_down_line] = ""
+
+	return printable_memory
+end
+
+local function fill_buffer_with_dummy_data(buf)
+	local dummy_printable_memory = make_memory_printable()
+	vim.bo[buf].modifiable = true
+	vim.api.nvim_buf_set_lines(buf, 0, M.config.window.heigth + additional_row_count, false, dummy_printable_memory)
+	vim.bo[buf].modifiable = false
+end
+
 mem_buf.create = function()
 	local buf = mem_buf.nr
 
@@ -75,12 +109,15 @@ mem_buf.create = function()
 	vim.api.nvim_buf_set_name(buf, "DAP Memory")
 	mem_buf.nr = buf
 
+	fill_buffer_with_dummy_data(buf)
+
 	vim.api.nvim_create_autocmd("BufEnter", {
 		buffer = buf,
 		group = augroup,
 		callback = function(opts)
 			save_statuscolumn = vim.wo.statuscolumn
 			vim.wo.statuscolumn = "%{%v:lua.ChangeNumColoum()%}"
+			vim.api.nvim_win_set_cursor(0, { save_cursor_pos_heigth, save_cursor_pos_width })
 		end,
 	})
 
