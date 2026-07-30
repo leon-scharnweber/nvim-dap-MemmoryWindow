@@ -72,15 +72,15 @@ local function make_memory_printable()
 	log.info("Curr addr: " .. curr_addr_count)
 
 	for i = 1, M.config.window.heigth do
-		local lines = " "
+		local lines = ""
 		local byte = ""
 		for j = 1, M.config.window.width do
 			local raw_byte = memory[curr_addr_count]
 			if raw_byte then
 				byte = hex_utils.byte_to_hex(raw_byte)
-				lines = lines .. byte .. " "
+				lines = lines .. " " .. byte
 			else
-				lines = lines .. M.config.window.unknown_sign .. " "
+				lines = lines .. " " .. M.config.window.unknown_sign
 			end
 			curr_addr_count = hex_utils.hexAddition(curr_addr_count, 1)
 		end
