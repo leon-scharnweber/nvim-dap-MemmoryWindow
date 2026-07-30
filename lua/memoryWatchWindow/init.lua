@@ -117,6 +117,10 @@ mem_buf.create = function()
 
 	fill_buffer_with_dummy_data(buf)
 
+	vim.keymap.set("n", "r", function()
+		M.writeMemory_OnCurrentLine()
+	end, { buffer = buf, desc = "Schreibt die Adresse neue der derzeitigen Line" })
+
 	vim.api.nvim_create_autocmd("BufEnter", {
 		buffer = buf,
 		group = augroup,
@@ -158,6 +162,26 @@ mem_buf.create = function()
 	})
 
 	return buf
+end
+
+local function getAddressOnCursor()
+	local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+	local right_col_addr = hex_utils.hexAddition(curr_addr, M.config.window.width * (row - 2))
+	return hex_utils.hexAddition(right_col_addr, math.floor(col / 3))
+end
+
+M.writeMemory_OnCurrentLine = function()
+	local memory = vim.fn.input("New Memory: ")
+
+	if not string.match(memory, "^[0-9a-f]+$") then
+		print("Error invalid Symbols")
+		return
+	end
+
+	local mem_ref = getAddressOnCursor()
+
+	M.writeMemory(mem_ref, memory)
 end
 
 M.close = function()
