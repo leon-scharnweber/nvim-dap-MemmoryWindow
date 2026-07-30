@@ -2,6 +2,7 @@ local M = {}
 
 local dap = require("dap")
 local hex_utils = require("memoryWatchWindow.hex_utils")
+local log = require("memoryWatchWindow.logging")
 
 local mem_buf = {
 	nr = -1,
@@ -52,7 +53,7 @@ local new_memory = false
 
 local function is_available(session)
 	if not session then
-		vim.notify("Error: No Sesssion available")
+		log.error("Error: No Sesssion available")
 		return false
 	end
 	return true
@@ -139,7 +140,7 @@ local function make_memory_printable()
 	local printable_memory = { "" }
 	local curr_addr_count = curr_addr
 
-	vim.notify("Curr addr: " .. curr_addr_count)
+	log.info("Curr addr: " .. curr_addr_count)
 
 	for i = 1, M.config.window.heigth do
 		local lines = " "
@@ -171,7 +172,7 @@ M.refresh = function()
 
 	if #wished_new_addr > 0 then
 		curr_addr = wished_new_addr[#wished_new_addr]
-		log.debug("Es gibt eine addr Änderung: " .. curr_addr)
+		log.info("Es gibt eine addr Änderung: " .. curr_addr)
 		updateMemory()
 		wished_new_addr = {}
 		return
@@ -201,7 +202,7 @@ M.changeCurrAddr = function(new_addr)
 			context = "repl",
 		}, function(err, res)
 			if err then
-				vim.notify("Fehler beim bekomen der Addresse der Variablen " .. err.message)
+				log.error("Fehler beim bekomen der Addresse der Variablen " .. err.message)
 			else
 				log.debug("Adresse bekommen von variable: " .. res.result)
 				wished_new_addr[#wished_new_addr + 1] = res.result
@@ -254,7 +255,7 @@ M.writeMemory = function(mem_ref, bytes)
 		data = bytes_encodeb64,
 	}, function(err, res)
 		if err then
-			vim.notify("Memory writting responses with an Error: " .. err.message)
+			log.error("Memory writting responses with an Error: " .. err.message)
 		else
 			updateMemory()
 		end
@@ -275,10 +276,10 @@ function M.readMemoryAddr(mem_ref, count)
 		count = count,
 	}, function(err, res)
 		if err then
-			vim.notify("Beim Call gab es einen Fehler: " .. err.message)
+			log.error("Beim Call gab es einen Fehler: " .. err.message)
 		else
 			if type(res.unreadableBytes) ~= nil then
-				vim.notify("Unreadable bytes: " .. res.unreadableBytes)
+				log.info("Unreadable bytes: " .. res.unreadableBytes)
 			else
 				res.unreadableBytes = 0
 			end
@@ -317,7 +318,7 @@ function M.readMemoryVar(var)
 		context = "repl",
 	}, function(err, res)
 		if err then
-			vim.notify("Error: Couldnt get the size of the variable: " .. var .. ": " .. err.message)
+			log.erro("Error: Couldnt get the size of the variable: " .. var .. ": " .. err.message)
 		else
 			varValues.size = tonumber(res.result)
 			ready()
@@ -330,7 +331,7 @@ function M.readMemoryVar(var)
 		context = "repl",
 	}, function(err, res)
 		if err then
-			vim.notify("Error: Couldnt get the address of the variable: " .. var .. ": " .. err.message)
+			log.error("Error: Couldnt get the address of the variable: " .. var .. ": " .. err.message)
 		else
 			varValues.addr = res.result
 			ready()
